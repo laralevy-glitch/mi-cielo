@@ -1,0 +1,121 @@
+const FECHA_INICIO_APOD = "1995-06-16";
+const FECHA_MINIMA = "1900-01-01";
+const NOMBRES_MESES = [
+"enero", "febrero", "marzo", "abril", "mayo", "junio",
+"julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+function construirFechaTexto(dia, mes, anio) {
+const d = Number(dia);
+const m = Number(mes);
+const a = Number(anio);
+if (!d || !m || !a) return "";
+const dosCifras = (n) => String(n).padStart(2, "0");
+return `${String(a).padStart(4, "0")}-${dosCifras(m)}-${dosCifras(d)}`;
+}
+function obtenerPartesFecha(fechaTexto) {
+const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaTexto || "");
+if (!coincidencia) return null;
+const anio = Number(coincidencia[1]);
+const mes = Number(coincidencia[2]);
+const dia = Number(coincidencia[3]);
+const diasDelMes = new Date(anio, mes, 0).getDate();
+if (mes < 1 || mes > 12 || dia < 1 || dia > diasDelMes) return null;
+return { dia, mes, anio };
+}
+function obtenerHoyTexto() {
+const hoy = new Date();
+return construirFechaTexto(hoy.getDate(), hoy.getMonth() + 1, hoy.getFullYear());
+}
+const NOMBRES_DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+function obtenerDiaSemana({ dia, mes, anio }) {
+const diaJs = new Date(anio, mes - 1, dia).getDay(); // JavaScript usa 0 = domingo … 6 = sábado
+const numero = diaJs === 0 ? 7 : diaJs;
+return { numero, nombre: NOMBRES_DIAS[numero - 1] };
+}
+const ANCHO_BITS = { dia: 5, mes: 4, anio: 11 };
+function obtenerBitsFecha({ dia, mes, anio }) {
+return {
+dia: dia.toString(2).padStart(ANCHO_BITS.dia, "0"),
+mes: mes.toString(2).padStart(ANCHO_BITS.mes, "0"),
+anio: anio.toString(2).padStart(ANCHO_BITS.anio, "0"),
+};
+}
+function obtenerDiaAnteriorTexto(fechaTexto) {
+const { dia, mes, anio } = obtenerPartesFecha(fechaTexto);
+const anterior = new Date(anio, mes - 1, dia - 1);
+return construirFechaTexto(anterior.getDate(), anterior.getMonth() + 1, anterior.getFullYear());
+}
+function validarFecha(fechaTexto) {
+if (!fechaTexto) {
+return { valida: false, mensaje: "Completa el día, el mes y el año para ver tu cielo." };
+}
+const partes = obtenerPartesFecha(fechaTexto);
+if (!partes) {
+return { valida: false, mensaje: "Esa fecha no existe. Revisa el día y el mes." };
+}
+if (partes.anio < 1000) {
+return { valida: false, mensaje: "Escribe el año completo, con cuatro cifras (por ejemplo, 1998)." };
+}
+if (fechaTexto < FECHA_MINIMA) {
+return { valida: false, mensaje: "Prueba con una fecha a partir de 1900." };
+}
+if (fechaTexto > obtenerHoyTexto()) {
+return { valida: false, mensaje: "Esa fecha todavía no ha llegado. Elige hoy o un día anterior." };
+}
+return { valida: true, mensaje: "" };
+}
+function formatearFechaLarga({ dia, mes, anio }) {
+return `${dia} de ${NOMBRES_MESES[mes - 1]} de ${anio}`;
+}
+</script>
+<script>
+const CONSTELACIONES = [
+{
+id: "aries",
+nombre: "Aries",
+latin: "Aries",
+entrada: 28.687,
+centro: { ra: 35, dec: 23 },
+campo: 24,
+dato: "Su estrella más brillante es Hamal, una gigante naranja.",
+estrellas: [
+{ id: "alfa", nombre: "Hamal", ra: 31.79, dec: 23.46, mag: 2.0 },
+{ id: "beta", ra: 28.66, dec: 20.81, mag: 2.6 },
+{ id: "gamma", ra: 28.38, dec: 19.29, mag: 3.9 },
+{ id: "41", ra: 42.5, dec: 27.26, mag: 3.6 },
+],
+lineas: [["gamma", "beta"], ["beta", "alfa"], ["alfa", "41"]],
+},
+{
+id: "tauro",
+nombre: "Tauro",
+latin: "Taurus",
+entrada: 53.417,
+centro: { ra: 70, dec: 20 },
+campo: 36,
+dato: "Aquí están las Pléyades y Aldebarán, el ojo rojo del toro.",
+estrellas: [
+{ id: "alfa", nombre: "Aldebarán", ra: 68.98, dec: 16.51, mag: 0.85 },
+{ id: "beta", nombre: "Elnath", ra: 81.57, dec: 28.61, mag: 1.65 },
+{ id: "zeta", ra: 84.41, dec: 21.14, mag: 3.0 },
+{ id: "gamma", ra: 64.95, dec: 15.63, mag: 3.65 },
+{ id: "delta", ra: 65.73, dec: 17.54, mag: 3.75 },
+{ id: "epsilon", ra: 67.15, dec: 19.18, mag: 3.5 },
+{ id: "theta", ra: 67.17, dec: 15.87, mag: 3.4 },
+{ id: "lambda", ra: 60.17, dec: 12.49, mag: 3.4 },
+{ id: "pleyades", nombre: "Pléyades", ra: 56.87, dec: 24.11, mag: 2.85 },
+],
+lineas: [
+["lambda", "gamma"], ["gamma", "theta"], ["theta", "alfa"], ["alfa", "zeta"],
+["gamma", "delta"], ["delta", "epsilon"], ["epsilon", "beta"],
+],
+},
+{
+id: "geminis",
+nombre: "Géminis",
+latin: "Gemini",
+entrada: 90.14,
+centro: { ra: 105, dec: 22 },
+campo: 32,
+dato: "Sus estrellas Cástor y Pólux representan a dos hermanos gemelos.",
+estrellas: [
