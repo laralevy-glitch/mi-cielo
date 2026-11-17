@@ -1,0 +1,193 @@
+.dibujo-bits .puentes {
+stroke: rgba(150, 180, 255, 0.35);
+stroke-width: 1.4;
+stroke-dasharray: 3 7;
+}
+.dibujo .nombres .digito {
+font-family: Consolas, "Courier New", monospace;
+font-size: 19px;
+fill: #a9bbff;
+}
+.binario {
+display: flex;
+flex-direction: column;
+gap: 0.6rem;
+}
+.grupo-titulo {
+margin: 0 0 0.2rem;
+font-size: 0.8rem;
+font-weight: 600;
+color: var(--texto-suave);
+}
+.estrellas {
+display: flex;
+flex-wrap: wrap;
+gap: 0.35rem;
+}
+.bit {
+display: grid;
+place-items: center;
+width: 1.7rem;
+height: 1.7rem;
+border-radius: 50%;
+font-family: Consolas, "Courier New", monospace;
+font-size: 0.8rem;
+color: var(--texto-suave);
+background: rgba(18, 22, 48, 0.9);
+border: 2px solid rgba(88, 98, 150, 0.9);
+}
+.bit.encendida {
+color: #0a0c1d;
+font-weight: 700;
+border-color: transparent;
+background: radial-gradient(circle, #ffffff 0%, #e6ecff 45%, #b9c6ff 100%);
+box-shadow: 0 0 0.6rem rgba(200, 215, 255, 0.9);
+}
+.cuadros {
+display: flex;
+flex-direction: column;
+gap: 1.4rem;
+}
+.cuadro {
+margin: 0;
+}
+.cuadro img {
+display: block;
+width: 100%;
+height: auto;
+padding: 0.45rem;
+background: #0b0e22;
+border: 1px solid rgba(255, 196, 110, 0.55);
+border-radius: 0.3rem;
+box-shadow: 0 0 0 0.3rem #11152f, 0 1rem 2.5rem rgba(0, 0, 0, 0.6);
+}
+.cuadro figcaption {
+display: flex;
+flex-direction: column;
+gap: 0.2rem;
+margin-top: 0.8rem;
+font-size: 0.88rem;
+}
+.cuadro strong {
+color: var(--calido);
+}
+.cuadro small {
+color: var(--texto-suave);
+font-size: 0.72rem;
+}
+.acciones {
+display: flex;
+flex-direction: column;
+gap: 0.7rem;
+}
+.boton {
+display: block;
+width: 100%;
+font: inherit;
+font-weight: 600;
+font-size: 1.05rem;
+text-align: center;
+text-decoration: none;
+color: #0a0c1d;
+background: linear-gradient(180deg, #c3cfff 0%, #6c86ff 100%);
+border: none;
+border-radius: 999px;
+padding: 0.85em 1.4em;
+cursor: pointer;
+}
+.boton-secundario {
+color: var(--texto);
+background: rgba(255, 255, 255, 0.06);
+border: 2px solid var(--borde);
+}
+.nota {
+margin: 0.5rem 0 0;
+font-size: 0.75rem;
+text-align: center;
+color: var(--texto-suave);
+}
+.sin-fecha {
+min-height: 100vh;
+justify-content: center;
+text-align: center;
+}
+.formulario {
+display: flex;
+flex-direction: column;
+gap: 0.8rem;
+}
+.formulario input {
+font: inherit;
+font-size: 1.2rem;
+padding: 0.7em;
+color: var(--texto);
+background: rgba(4, 5, 13, 0.8);
+border: 2px solid var(--borde);
+border-radius: 0.8rem;
+}
+@media (prefers-reduced-motion: reduce) {
+.animada .estrellas circle,
+.animada .lineas line,
+.animada .nombres {
+animation: none;
+stroke-dashoffset: 0;
+}
+}
+</style>
+</head>
+<body>
+<!--
+Página que abre el QR de la exhibición, en el teléfono del visitante.
+Todo se calcula aquí a partir de la fecha del enlace (?f=AAAA-MM-DD):
+no hay servidor ni base de datos, y no se guarda nada del visitante.
+-->
+<main id="recuerdo" class="recuerdo" hidden>
+<header class="cabecera">
+<p class="antetitulo">El cielo el día que naciste</p>
+<h1 id="fecha-larga"></h1>
+<p class="sol-frente">Ese día el Sol estaba frente a</p>
+<h2 id="nombre-constelacion" class="constelacion"></h2>
+<p id="latin" class="latin"></p>
+</header>
+<section class="tarjeta">
+<p class="etiqueta">1 · Tu fecha en estrellas</p>
+<p class="detalle">Estrella encendida = 1, apagada = 0. Esta figura solo existe para tu fecha.</p>
+<div id="binario" class="binario"></div>
+</section>
+<figure class="marco">
+<p class="etiqueta">2 · Tu constelación</p>
+<div id="dibujo" class="dibujo"></div>
+<figcaption id="dato" class="pie"></figcaption>
+</figure>
+<p class="etiqueta etiqueta-cuadros">3 · Visto con telescopio</p>
+<div id="cuadros" class="cuadros"></div>
+<section class="tarjeta">
+<p class="etiqueta">Sus estrellas</p>
+<ul id="lista-estrellas" class="lista-estrellas"></ul>
+<p class="etiqueta">Su historia</p>
+<p id="mito" class="mito"></p>
+</section>
+<section class="tarjeta luna">
+<div id="luna-dibujo" class="luna-dibujo" aria-hidden="true"></div>
+<div>
+<p class="etiqueta">La Luna esa noche</p>
+<p id="luna-nombre" class="nombre"></p>
+<p id="luna-detalle" class="detalle"></p>
+</div>
+</section>
+<section class="acciones">
+<button type="button" id="boton-guardar" class="boton">Guardar mi cielo</button>
+<a id="enlace-nasa" class="boton boton-secundario" target="_blank" rel="noopener" hidden>Ver la foto de la NASA de ese día</a>
+</section>
+<p class="nota">Recuerdo de la obra «El cielo el día que naciste». Esta página no guarda ningún dato tuyo: todo sale de la fecha del enlace.</p>
+</main>
+<main id="sin-fecha" class="recuerdo sin-fecha" hidden>
+<p class="antetitulo">El cielo el día que naciste</p>
+<h1>¿Cuándo naciste?</h1>
+<form id="formulario" class="formulario">
+<input type="date" id="campo-fecha" required min="1900-01-01">
+<button type="submit" class="boton">Ver mi cielo</button>
+</form>
+<p id="mensaje" class="detalle"></p>
+</main>
+<script>
