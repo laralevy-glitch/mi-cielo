@@ -1,0 +1,87 @@
+const d0 = centro.dec * GRADOS;
+const cosC = Math.sin(d0) * Math.sin(d) + Math.cos(d0) * Math.cos(d) * Math.cos(a - a0);
+const x = (Math.cos(d) * Math.sin(a - a0)) / cosC;
+const y = (Math.cos(d0) * Math.sin(d) - Math.sin(d0) * Math.cos(d) * Math.cos(a - a0)) / cosC;
+return {
+x: 0.5 - x / GRADOS / campo,
+y: 0.5 - y / GRADOS / campo,
+};
+}
+function obtenerUrlFotoCielo(constelacion, tamanoPx = 600) {
+const parametros = new URLSearchParams({
+hips: "CDS/P/Mellinger/color",
+width: tamanoPx,
+height: tamanoPx,
+fov: constelacion.campo,
+projection: "TAN",
+coordsys: "icrs",
+ra: constelacion.centro.ra,
+dec: constelacion.centro.dec,
+format: "jpg",
+});
+return `https://alasky.cds.unistra.fr/hips-image-services/hips2fits?${parametros}`;
+}
+</script>
+<script>
+const HISTORIAS_CONSTELACIONES = {
+aries: "Los griegos veían aquí al carnero del vellocino de oro, que voló por el cielo para salvar a dos hermanos. Hace 2000 años el Sol pasaba por Aries al empezar la primavera del norte.",
+tauro: "Un toro: el que, según el mito griego, cruzó el mar llevando a Europa sobre su lomo. Sobre su espalda brillan las Pléyades, un cúmulo que casi todas las culturas del mundo nombraron.",
+geminis: "Los gemelos Cástor y Pólux, hermanos inseparables del mito griego. Sus dos estrellas más brillantes llevan sus nombres y se ven una junto a la otra.",
+cancer: "Un cangrejo, la constelación más tenue del recorrido del Sol: casi no se ve en la ciudad. En su centro hay un enjambre de estrellas, el Pesebre.",
+leo: "El león de Nemea del mito de Hércules. Es de las pocas constelaciones que de verdad se parecen a su figura: un león echado, con Régulo en el corazón.",
+virgo: "Una doncella que sostiene una espiga de trigo; para griegos y romanos era la diosa de la cosecha. Es la constelación más grande del recorrido del Sol.",
+libra: "La balanza, la única figura de este recorrido que no es un ser vivo. Antes sus estrellas eran las pinzas del escorpión, y aún llevan nombres árabes que lo recuerdan.",
+escorpio: "El escorpión que, según el mito, venció al cazador Orión. Por eso nunca se ven juntos: cuando Escorpio sale por el este, Orión se esconde por el oeste.",
+ofiuco: "Un hombre que sostiene una serpiente; los griegos lo llamaban Asclepio, el sanador. El Sol la cruza cada año, pero quedó fuera de la lista tradicional de doce.",
+sagitario: "Un centauro arquero, mitad humano y mitad caballo, que apunta su flecha hacia Escorpio. En esa dirección está el centro de nuestra galaxia.",
+capricornio: "Una cabra con cola de pez, una de las figuras más antiguas que se conocen: ya aparece en tablillas de Babilonia de hace más de 3000 años.",
+acuario: "Un aguador que vierte un río de estrellas. Para los babilonios esta zona del cielo era «el mar», porque el Sol pasaba por ella en la temporada de lluvias.",
+piscis: "Dos peces unidos por una cinta. Aquí está hoy el punto por donde el Sol cruza el ecuador del cielo cada mes de marzo.",
+};
+function describirBrillo(magnitud) {
+if (magnitud < 1.5) return "de las más brillantes del cielo";
+if (magnitud < 2.5) return "brillante";
+if (magnitud < 3.5) return "se ve a simple vista";
+return "tenue";
+}
+function obtenerEstrellasConNombre(constelacion) {
+return constelacion.estrellas
+.filter((estrella) => estrella.nombre)
+.sort((a, b) => a.mag - b.mag)
+.map((estrella) => ({ nombre: estrella.nombre, mag: estrella.mag, brillo: describirBrillo(estrella.mag) }));
+}
+function crearListaEstrellas(constelacion, { conBrillo = true } = {}) {
+return obtenerEstrellasConNombre(constelacion).map(({ nombre, mag, brillo }) => {
+const item = document.createElement("li");
+const punto = document.createElement("span");
+punto.className = "punto-estrella";
+punto.style.setProperty("--tamano", `${Math.max(0.35, 1 - mag * 0.17).toFixed(2)}rem`);
+const texto = document.createElement("span");
+const fuerte = document.createElement("strong");
+fuerte.textContent = nombre;
+texto.append(fuerte);
+if (conBrillo) texto.append(` · ${brillo}`);
+item.append(punto, texto);
+return item;
+});
+}
+</script>
+<script>
+const SVG_NS = "http://www.w3.org/2000/svg";
+const TAMANO_MAPA = 600; // unidades internas del dibujo (se escala solo)
+function crearSvg(etiqueta, atributos = {}) {
+const elemento = document.createElementNS(SVG_NS, etiqueta);
+for (const [nombre, valor] of Object.entries(atributos)) elemento.setAttribute(nombre, valor);
+return elemento;
+}
+function crearAzar(texto) {
+let semilla = [...texto].reduce((suma, letra) => suma * 31 + letra.charCodeAt(0), 7) % 2147483647;
+return () => (semilla = (semilla * 16807) % 2147483647) / 2147483647;
+}
+function dibujarConstelacion(constelacion, { conNombres = true, conFondo = true } = {}) {
+const svg = crearSvg("svg", {
+viewBox: `0 0 ${TAMANO_MAPA} ${TAMANO_MAPA}`,
+role: "img",
+"aria-label": `Mapa de la constelación ${constelacion.nombre}`,
+class: "dibujo-constelacion",
+});
