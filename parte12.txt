@@ -1,0 +1,73 @@
+for (const { clave, nombre } of GRUPOS_BITS) {
+const grupo = document.createElement("div"); 
+grupo.className = "grupo";
+const titulo = document.createElement("p");
+titulo.className = "grupo-titulo";
+titulo.textContent = `${nombre} ${partes[clave]}`;
+const fila = document.createElement("div");
+fila.className = "estrellas";
+fila.setAttribute("role", "img");
+fila.setAttribute("aria-label", `${nombre}: ${partes[clave]} en binario es ${bits[clave]}`);
+for (const bit of bits[clave]) {
+const estrella = document.createElement("span");
+estrella.className = bit === "1" ? "bit encendida" : "bit";
+estrella.textContent = bit;
+fila.append(estrella);
+}
+grupo.append(titulo, fila);
+$("binario").append(grupo);
+}
+}
+function pintarCuadros(constelacion) {
+for (const cuadro of obtenerCuadrosGaleria(constelacion).filter((c) => c.tipo === "imagen")) {
+const figura = document.createElement("figure");
+figura.className = "cuadro";
+const imagen = document.createElement("img");
+imagen.src = cuadro.url;
+imagen.alt = cuadro.titulo;
+imagen.loading = "lazy";
+imagen.addEventListener("error", () => figura.remove());
+const pie = document.createElement("figcaption");
+const titulo = document.createElement("strong");
+titulo.textContent = cuadro.titulo;
+const texto = document.createElement("span");
+texto.textContent = cuadro.descripcion;
+const credito = document.createElement("small");
+credito.textContent = cuadro.credito;
+pie.append(titulo, texto, credito);
+figura.append(imagen, pie);
+$("cuadros").append(figura);
+}
+}
+function prepararEnlaceNasa(fechaTexto, { dia, mes, anio }) {
+if (fechaTexto < FECHA_INICIO_APOD) return;
+const dos = (n) => String(n).padStart(2, "0");
+$("enlace-nasa").href = `https://apod.nasa.gov/apod/ap${dos(anio % 100)}${dos(mes)}${dos(dia)}.html`;
+$("enlace-nasa").hidden = false;
+}
+function guardarImagen(fechaTexto, partes, bits) {
+const nombre = `mi-cielo-${fechaTexto}.png`;
+dibujarRecuerdoCanvas(partes, bits).toBlob(async (blob) => {
+const archivo = new File([blob], nombre, { type: "image/png" });
+if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+try {
+await navigator.share({ files: [archivo], title: "Mi cielo" });
+return;
+} catch (error) {
+if (error.name === "AbortError") return; // la persona cerró el menú
+}
+}
+const url = URL.createObjectURL(blob);
+const enlace = document.createElement("a");
+enlace.href = url;
+enlace.download = nombre;
+document.body.append(enlace);
+enlace.click();
+enlace.remove();
+setTimeout(() => URL.revokeObjectURL(url), 10000);
+}, "image/png");
+}
+iniciar();
+</script>
+</body>
+</html>
