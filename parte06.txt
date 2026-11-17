@@ -1,0 +1,109 @@
+dato: "Representa a un aguador; en ella está la nebulosa Hélice, una de las más cercanas a la Tierra.",
+estrellas: [
+{ id: "beta", nombre: "Sadalsuud", ra: 322.89, dec: -5.57, mag: 2.9 },
+{ id: "alfa", nombre: "Sadalmelik", ra: 331.45, dec: -0.32, mag: 2.95 },
+{ id: "delta", nombre: "Skat", ra: 343.66, dec: -15.82, mag: 3.25 },
+{ id: "gamma", ra: 335.41, dec: -1.39, mag: 3.85 },
+{ id: "zeta", ra: 337.21, dec: -0.02, mag: 3.65 },
+{ id: "eta", ra: 338.84, dec: -0.12, mag: 4.0 },
+{ id: "pi", ra: 336.32, dec: 1.38, mag: 4.6 },
+{ id: "epsilon", ra: 311.92, dec: -9.5, mag: 3.75 },
+{ id: "theta", ra: 334.21, dec: -7.78, mag: 4.15 },
+{ id: "lambda", ra: 343.15, dec: -7.58, mag: 3.7 },
+{ id: "tau", ra: 342.4, dec: -13.59, mag: 4.0 },
+{ id: "88", ra: 347.36, dec: -21.17, mag: 3.65 },
+],
+lineas: [
+["epsilon", "beta"], ["beta", "alfa"], ["alfa", "gamma"], ["gamma", "zeta"], ["zeta", "eta"],
+["zeta", "pi"], ["alfa", "theta"], ["theta", "lambda"], ["lambda", "tau"], ["tau", "delta"],
+["delta", "88"],
+],
+},
+{
+id: "piscis",
+nombre: "Piscis",
+latin: "Pisces",
+entrada: 351.65,
+centro: { ra: 10, dec: 15 },
+campo: 52,
+dato: "Hoy en ella está el punto donde el Sol cruza el ecuador celeste cada marzo.",
+estrellas: [
+{ id: "alfa", nombre: "Alrescha", ra: 30.51, dec: 2.76, mag: 3.8 },
+{ id: "eta", ra: 22.87, dec: 15.35, mag: 3.6 },
+{ id: "gamma", ra: 349.29, dec: 3.28, mag: 3.7 },
+{ id: "theta", ra: 351.99, dec: 6.38, mag: 4.3 },
+{ id: "iota", ra: 354.99, dec: 5.63, mag: 4.1 },
+{ id: "lambda", ra: 355.51, dec: 1.78, mag: 4.5 },
+{ id: "kappa", ra: 351.73, dec: 1.26, mag: 4.9 },
+{ id: "omega", ra: 359.83, dec: 6.86, mag: 4.0 },
+{ id: "delta", ra: 12.17, dec: 7.59, mag: 4.4 },
+{ id: "epsilon", ra: 15.74, dec: 7.89, mag: 4.3 },
+{ id: "nu", ra: 25.36, dec: 5.49, mag: 4.45 },
+{ id: "omicron", ra: 26.35, dec: 9.16, mag: 4.25 },
+{ id: "upsilon", ra: 19.87, dec: 27.26, mag: 4.75 },
+{ id: "tau", ra: 17.86, dec: 30.09, mag: 4.5 },
+],
+lineas: [
+["gamma", "theta"], ["theta", "iota"], ["iota", "lambda"], ["lambda", "kappa"], ["kappa", "gamma"],
+["iota", "omega"], ["omega", "delta"], ["delta", "epsilon"], ["epsilon", "nu"], ["nu", "alfa"],
+["alfa", "omicron"], ["omicron", "eta"], ["eta", "upsilon"], ["upsilon", "tau"],
+],
+},
+];
+</script>
+<script>
+const MES_LUNAR_DIAS = 29.530588853; // de una luna nueva a la siguiente
+const LUNA_NUEVA_REFERENCIA = 2451550.26; // luna nueva del 6 de enero de 2000 (fecha juliana)
+const GRADOS = Math.PI / 180;
+const HEMISFERIO_SUR = true;
+const FASES_LUNARES = [
+"Luna nueva", "Luna creciente", "Cuarto creciente", "Gibosa creciente",
+"Luna llena", "Gibosa menguante", "Cuarto menguante", "Luna menguante",
+];
+function calcularCieloDeNacimiento(partes) {
+return {
+constelacion: obtenerConstelacionDelSol(partes),
+luna: calcularFaseLunar(partes),
+};
+}
+function calcularFechaJuliana({ dia, mes, anio }) {
+const mediodia = new Date(anio, mes - 1, dia, 12, 0, 0);
+return mediodia.getTime() / 86400000 + 2440587.5;
+}
+function calcularLongitudSol(fechaJuliana) {
+const n = fechaJuliana - 2451545.0; // días desde el 1 de enero de 2000
+const longitudMedia = 280.46 + 0.9856474 * n;
+const anomalia = (357.528 + 0.9856003 * n) * GRADOS;
+const longitud = longitudMedia + 1.915 * Math.sin(anomalia) + 0.02 * Math.sin(2 * anomalia);
+const longitudJ2000 = longitud - 1.397 * (n / 36525);
+return ((longitudJ2000 % 360) + 360) % 360;
+}
+function obtenerConstelacionDelSol(partes) {
+const longitud = calcularLongitudSol(calcularFechaJuliana(partes));
+let resultado = CONSTELACIONES[CONSTELACIONES.length - 1]; // Piscis, antes de Aries
+for (const constelacion of CONSTELACIONES) {
+if (longitud >= constelacion.entrada) resultado = constelacion;
+}
+return resultado;
+}
+function calcularFaseLunar(partes) {
+const dias = calcularFechaJuliana(partes) - LUNA_NUEVA_REFERENCIA;
+const edad = ((dias % MES_LUNAR_DIAS) + MES_LUNAR_DIAS) % MES_LUNAR_DIAS;
+const fraccion = edad / MES_LUNAR_DIAS;
+return {
+fraccion,
+edadDias: Math.round(edad),
+iluminacion: Math.round(((1 - Math.cos(2 * Math.PI * fraccion)) / 2) * 100),
+nombre: FASES_LUNARES[Math.floor(fraccion * 8 + 0.5) % 8],
+};
+}
+function obtenerPatronEstrellas(constelacion) {
+return constelacion.estrellas.map((estrella) => ({
+...estrella,
+...proyectarEnCuadrado(estrella, constelacion.centro, constelacion.campo),
+}));
+}
+function proyectarEnCuadrado({ ra, dec }, centro, campo) {
+const a = ra * GRADOS;
+const d = dec * GRADOS;
+const a0 = centro.ra * GRADOS;
