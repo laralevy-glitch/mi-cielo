@@ -1,0 +1,122 @@
+texto: "Una esfera de cientos de miles de estrellas muy antiguas, casi tan viejas como la galaxia.",
+},
+},
+escorpio: {
+figura: "el escorpión",
+grabado: "Sidney Hall - Urania's Mirror - Scorpio.jpg",
+joya: {
+nombre: "Nebulosa Pata de Gato", archivo: "Cats-paw-eso.jpg", credito: "ESO · CC BY 4.0",
+texto: "Una «fábrica» de estrellas: en sus nubes rojas de hidrógeno están naciendo estrellas enormes.",
+},
+},
+ofiuco: {
+figura: "el portador de la serpiente",
+grabado: "Sidney Hall - Urania's Mirror - Taurus Poniatowski, Serpentarius, Scutum Sobiesky, and Serpens.jpg",
+joya: {
+nombre: "Nubes de Rho Ophiuchi", archivo: "Rho Ophiuchi (NIRCam Image) (2023-128).png", credito: "NASA, ESA, CSA, telescopio James Webb · Dominio público",
+texto: "La nube de formación de estrellas más cercana a nosotros, fotografiada por el telescopio James Webb en su primer aniversario (2023). Cada punto rojo es una estrella recién nacida.",
+},
+},
+sagitario: {
+figura: "el arquero",
+grabado: "Sidney Hall - Urania's Mirror - Sagittarius and Corona Australis, Microscopium, and Telescopium.jpg",
+joya: {
+nombre: "Nebulosa de la Laguna", archivo: "Lagoon Nebula (ESO).jpg", credito: "ESO · CC BY 4.0",
+texto: "Una gigantesca nube de gas brillante donde están naciendo estrellas. Es tan grande que se ve con binoculares.",
+},
+},
+capricornio: {
+figura: "la cabra con cola de pez",
+grabado: "Sidney Hall - Urania's Mirror - Capricornus.jpg",
+joya: {
+nombre: "Cúmulo M30", archivo: "Messier 30 Hubble WikiSky.jpg", credito: "NASA / STScI, telescopio Hubble · Dominio público",
+texto: "Sus estrellas tienen unos 13 000 millones de años: casi la edad del universo.",
+},
+},
+acuario: {
+figura: "el aguador",
+grabado: "Sidney Hall - Urania's Mirror - Aquarius, Piscis Australis & Ballon Aerostatique.jpg",
+joya: {
+nombre: "Nebulosa Hélice", archivo: "NGC7293 (2004).jpg", credito: "NASA / ESA, telescopio Hubble · Dominio público",
+texto: "Lo que queda de una estrella como el Sol que soltó sus capas. Así terminará nuestro Sol.",
+},
+},
+piscis: {
+figura: "los peces",
+grabado: "Sidney Hall - Urania's Mirror - Pisces.jpg",
+joya: {
+nombre: "Galaxia M74", archivo: "Messier 74 by HST.jpg", credito: "NASA / ESA, telescopio Hubble · Dominio público",
+texto: "Una galaxia espiral vista de frente, con brazos casi perfectos, a 32 millones de años luz.",
+},
+},
+};
+function urlCommons(archivo, ancho = 960) {
+return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(archivo)}?width=${ancho}`;
+}
+function obtenerCuadrosGaleria(constelacion) {
+const extra = GALERIA_CONSTELACIONES[constelacion.id] || {};
+const cuadros = [
+{
+id: "cielo",
+etiqueta: "Tu constelación",
+titulo: constelacion.nombre,
+descripcion: "Sus estrellas principales, unidas tal como se ven en el cielo.",
+credito: "Dibujo con las posiciones reales de las estrellas",
+creditoFoto: "Dibujo sobre una foto real del cielo: A. Mellinger · CDS Estrasburgo",
+url: obtenerUrlFotoCielo(constelacion),
+tipo: "mapa",
+},
+];
+if (extra.joya) {
+cuadros.push({
+id: "joya",
+etiqueta: extra.joya.nombre,
+titulo: `${extra.joya.nombre}, a través de un telescopio`,
+nombre: extra.joya.nombre,
+descripcion: `Dentro de ${constelacion.nombre}, visto con telescopio. ${extra.joya.texto}`,
+credito: `${extra.joya.credito} · Wikimedia Commons`,
+url: urlCommons(extra.joya.archivo),
+tipo: "imagen",
+});
+}
+return cuadros;
+}
+function crearCuadroBits(partes) {
+return {
+id: "bits",
+etiqueta: "Tu fecha",
+titulo: "La constelación de tu fecha",
+descripcion:
+`Tu fecha escrita en binario con 20 estrellas: 5 para el día, 4 para el mes y 11 para el año. ` +
+`Cada 1 es una estrella encendida y las encendidas se unen: esta figura solo existe para el ` +
+`${partes.dia}/${partes.mes}/${partes.anio}.`,
+credito: "Obra generada con tu fecha · encendida = 1, apagada = 0",
+tipo: "bits",
+};
+}
+</script>
+<script>
+const GRUPOS_BITS = [
+{ clave: "dia", nombre: "Día" },
+{ clave: "mes", nombre: "Mes" },
+{ clave: "anio", nombre: "Año" },
+];
+function formatearFechaCorta({ dia, mes, anio }) {
+return `${String(dia).padStart(2, "0")} / ${String(mes).padStart(2, "0")} / ${anio}`;
+}
+function dibujarRecuerdoCanvas(partes, bits) {
+const ANCHO = 1080;
+const ALTO = 1920;
+const lienzo = document.createElement("canvas");
+lienzo.width = ANCHO;
+lienzo.height = ALTO;
+const g = lienzo.getContext("2d");
+const sans = '"Inter", "Segoe UI", system-ui, sans-serif';
+const titulo = '"Space Grotesk", "Segoe UI", system-ui, sans-serif';
+const mono = 'Consolas, "Courier New", monospace';
+const fondo = g.createLinearGradient(0, 0, 0, ALTO);
+fondo.addColorStop(0, "#04050d");
+fondo.addColorStop(1, "#161c42");
+g.fillStyle = fondo;
+g.fillRect(0, 0, ANCHO, ALTO);
+let semilla = partes.anio * 372 + partes.mes * 31 + partes.dia;
