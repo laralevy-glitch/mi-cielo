@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Mi cielo</title>
+<body style="background:#04050d">
+<script>
+(async () => {
+  const n = 12;
+  let t = "";
+  for (let i = 1; i <= n; i++) {
+    const r = await fetch("parte" + String(i).padStart(2, "0") + ".txt", { cache: "no-cache" });
+    t += await r.text();
+  }
+  document.open(); document.write(t); document.close();
+})();
+</script>
