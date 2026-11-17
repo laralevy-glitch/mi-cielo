@@ -1,0 +1,115 @@
+capaLineas.append(linea);
+}
+const radio = 6 + (5 * (campo.length - 1 - i)) / Math.max(1, campo.length - 1);
+const brillo = crearSvg("circle", { cx: x, cy: y, r: radio * 3.4, fill: "url(#halo-bits)" });
+brillo.style.setProperty("--orden", ordenEstrella);
+capaHalos.append(brillo);
+const punto = crearSvg("circle", { cx: x, cy: y, r: radio });
+punto.style.setProperty("--orden", ordenEstrella++);
+capaEstrellas.append(punto);
+anterior = [x, y];
+encendidas[clave].push([x, y]);
+} else {
+capaApagadas.append(crearSvg("circle", { cx: x, cy: y, r: 5 }));
+}
+if (conNombres) {
+const digito = crearSvg("text", { x, y: y + 30, "text-anchor": "middle", class: "digito" });
+digito.textContent = bit;
+capaNombres.append(digito);
+}
+});
+if (conNombres) {
+const { nombre, x0, x1, arriba } = ZONAS_BITS[clave];
+const ys = posiciones.map(([, py]) => py);
+const yEtiqueta = arriba ? Math.min(...ys) - 26 : Math.max(...ys) + 58;
+const etiqueta = crearSvg("text", { x: (x0 + x1) / 2, y: yEtiqueta, "text-anchor": "middle" });
+etiqueta.textContent = `${nombre} ${partes[clave]}`;
+capaNombres.append(etiqueta);
+}
+}
+for (const clave of ["dia", "mes"]) {
+let mejor = null;
+for (const a of encendidas[clave]) {
+for (const b of encendidas.anio) {
+const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+if (!mejor || d < mejor.d) mejor = { a, b, d };
+}
+}
+if (mejor) capaPuentes.append(crearSvg("line", { x1: mejor.a[0], y1: mejor.a[1], x2: mejor.b[0], y2: mejor.b[1] }));
+}
+svg.append(defs, crearSvg("g", { class: "foto" }), capaFondo, capaApagadas, capaPuentes, capaLineas, capaHalos, capaEstrellas, capaNombres);
+return svg;
+}
+function dibujarLuna(fraccion) {
+const r = 50;
+const svg = crearSvg("svg", { viewBox: "0 0 100 100" });
+svg.append(crearSvg("circle", { cx: r, cy: r, r, fill: "#1d2244" }));
+const creciente = fraccion < 0.5;
+const ladoBorde = creciente ? 1 : 0;
+const anchoTerminador = r * Math.abs(Math.cos(2 * Math.PI * fraccion));
+const curvaTerminador = (fraccion % 0.5) < 0.25 ? 0 : 1;
+const parteIluminada = crearSvg("path", {
+d: `M ${r} 0 A ${r} ${r} 0 0 ${ladoBorde} ${r} ${2 * r} ` +
+`A ${anchoTerminador} ${r} 0 0 ${curvaTerminador} ${r} 0 Z`,
+fill: "#f3ecd2",
+});
+if (HEMISFERIO_SUR) parteIluminada.setAttribute("transform", "translate(100 0) scale(-1 1)");
+svg.append(parteIluminada);
+return svg;
+}
+</script>
+<script>
+const GALERIA_CONSTELACIONES = {
+aries: {
+figura: "el carnero",
+grabado: "Sidney Hall - Urania's Mirror - Aries and Musca Borealis.jpg",
+joya: {
+nombre: "Galaxia NGC 772", archivo: "NGC772 - Noirlab2209a.jpg", credito: "Observatorio Gemini / NOIRLab · CC BY 4.0",
+texto: "Una galaxia espiral a unos 100 millones de años luz. Uno de sus brazos es mucho más largo que los demás.",
+},
+},
+tauro: {
+figura: "el toro",
+grabado: "Sidney Hall - Urania's Mirror - Taurus.jpg",
+joya: {
+nombre: "Las Pléyades", archivo: "Pleiades large.jpg", credito: "NASA, ESA, AURA/Caltech · Dominio público",
+texto: "Un cúmulo de estrellas jóvenes y azules, envueltas en polvo que refleja su luz. Se ven a simple vista.",
+},
+},
+geminis: {
+figura: "los gemelos",
+grabado: "Sidney Hall - Urania's Mirror - Gemini.jpg",
+joya: {
+nombre: "Cúmulo M35", archivo: "Messier 35 – A cluster of stars (b10).jpg", credito: "ESO / S. Brunier · CC BY 4.0",
+texto: "Unas 2500 estrellas que nacieron juntas, a 2800 años luz. Con binoculares se ve como una mancha brillante.",
+},
+},
+cancer: {
+figura: "el cangrejo",
+grabado: "Sidney Hall - Urania's Mirror - Cancer.jpg",
+joya: {
+nombre: "El Pesebre (M44)", archivo: "M44, NGC 2632 (noao-m44).jpg", credito: "NOIRLab / NSF / AURA · CC BY 4.0",
+texto: "Cerca de mil estrellas. Galileo fue el primero en verlas una por una con su telescopio, en 1609.",
+},
+},
+leo: {
+figura: "el león",
+grabado: "Sidney Hall - Urania's Mirror - Leo Major and Leo Minor.jpg",
+joya: {
+nombre: "El Triplete de Leo", archivo: "Leo Triplet (M66 group) (noao-m65a66).jpg", credito: "NOIRLab / NSF / AURA · CC BY 4.0",
+texto: "Tres galaxias espirales vecinas que se deforman unas a otras con su gravedad.",
+},
+},
+virgo: {
+figura: "la doncella",
+grabado: "Sidney Hall - Urania's Mirror - Virgo.jpg",
+joya: {
+nombre: "Galaxia del Sombrero", archivo: "M104 ngc4594 sombrero galaxy hi-res.jpg", credito: "NASA / ESA, telescopio Hubble · Dominio público",
+texto: "Su banda de polvo oscuro, vista de canto, la hace parecer un sombrero de ala ancha.",
+},
+},
+libra: {
+figura: "la balanza",
+grabado: "Sidney Hall - Urania's Mirror - Libra.jpg",
+joya: {
+nombre: "Cúmulo NGC 5897", archivo: "NGC 5897GCL01a.jpg", credito: "Palomar Sky Survey · CC BY 3.0",
